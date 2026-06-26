@@ -1,0 +1,54 @@
+workflows:
+  ios-release-build:
+    name: Rahal iOS Build
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      # groups:
+        # - app_secrets # تذكر التأكد من تسمية المجموعة بهذا الاسم في لوحة التحكم
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - $HOME/.pub-cache
+        - ios/Pods
+    scripts:
+      # - name: 📝 Generate .env file
+      #   script: |
+      #     # استخدام $CM_BUILD_DIR لضمان كتابة الملف في المجلد الرئيسي الصحيح للمشروع
+      #     echo "GEMINI_API_KEY=$GEMINI_API_KEY" > $CM_BUILD_DIR/.env
+      #     echo "GROQ_API_KEY=$GROQ_API_KEY" >> $CM_BUILD_DIR/.env
+      #     echo "ELEVENLABS_API_KEY=$ELEVENLABS_API_KEY" >> $CM_BUILD_DIR/.env
+
+      - name: 📦 Install Flutter Dependencies
+        script: flutter pub get
+
+      - name: ⚙️ Pre-build iOS Configuration
+        script: flutter build ios --config-only --no-codesign
+
+      - name: 🛠️ Setup CocoaPods
+        script: |
+          cd ios
+          rm -rf Pods
+          rm -f Podfile.lock
+          pod install --repo-update
+          cd ..
+
+      - name: 🏗️ Build iOS Release
+        script: |
+        
+          flutter build ios --release --no-codesign --build-name=1.0.$BUILD_NUMBER --build-number=$BUILD_NUMBER
+
+      - name: 📂 Create IPA
+        script: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          # تم تغيير اسم ملف الـ IPA ليتضمن رقم البناء تلقائيًا لتسهيل تتبعه
+          zip -qq -r -9 Rahal_V${BUILD_NUMBER}.ipa Payload
+
+    artifacts:
+      # تحديث المسار ليلتقط أي ملف IPA يتم إنشاؤه داخل المجلد الديناميكي
+      - build/ios/iphoneos/*.ipa
