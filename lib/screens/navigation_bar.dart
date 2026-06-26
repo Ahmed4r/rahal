@@ -14,10 +14,7 @@ class NavigationBarPage extends StatefulWidget {
 
 class _NavigationBarState extends State<NavigationBarPage> {
   final List<_NavItem> items = [
-    _NavItem(
-      icon: CupertinoIcons.home,
-      label: 'Home',
-    ),
+    _NavItem(icon: CupertinoIcons.home, label: 'Home'),
     // _NavItem(
     //   icon: FluentIcons.map_24_regular,
     //   activeIcon: FluentIcons.map_24_filled,
@@ -33,10 +30,7 @@ class _NavigationBarState extends State<NavigationBarPage> {
     //   activeIcon: FluentIcons.grid_dots_24_filled,
     //   label: 'More',
     // ),
-    _NavItem(
-      icon: CupertinoIcons.settings,
-      label: 'Settings',
-    ),
+    _NavItem(icon: CupertinoIcons.settings, label: 'Settings'),
   ];
 
   final List<Widget> _pages = [
@@ -61,14 +55,14 @@ class _NavigationBarState extends State<NavigationBarPage> {
       body: _pages[_selectedNavIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).bottomAppBarTheme.color,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         selectedLabelStyle: GoogleFonts.roboto(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          color: Colors.black,
+          color: Theme.of(context).bottomAppBarTheme.color,
         ),
         unselectedLabelStyle: GoogleFonts.roboto(
           fontSize: 12,

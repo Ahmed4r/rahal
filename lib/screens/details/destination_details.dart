@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DestinationDetailsScreen extends StatefulWidget {
   const DestinationDetailsScreen({super.key});
@@ -14,7 +15,7 @@ class DestinationDetailsScreen extends StatefulWidget {
 
 class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
   bool _isFavorite = false;
-  AppleMapController ? _mapController;
+  AppleMapController? _mapController;
 
   static const Color _accent = Color(0xFFF8774F);
 
@@ -58,8 +59,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                     icon: _isFavorite
                         ? CupertinoIcons.heart_fill
                         : CupertinoIcons.heart,
-                    iconColor:
-                        _isFavorite ? Colors.redAccent : Colors.black87,
+                    iconColor: _isFavorite ? Colors.redAccent : Colors.black87,
                     onTap: () => setState(() => _isFavorite = !_isFavorite),
                   ),
                 ],
@@ -73,15 +73,18 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
 
   // ── Hero Image ────────────────────────────────────────────────────────────
   Widget _buildHeroImage() {
-    return SizedBox(
-      height: 280.h,
-      width: double.infinity,
-      child: Image.network(
-        'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          color: Colors.grey.shade200,
-          child: Icon(CupertinoIcons.photo, size: 48.sp, color: Colors.grey),
+    return Hero(
+      tag: 'destination_image',
+      child: SizedBox(
+        height: 280.h,
+        width: double.infinity,
+        child: Image.network(
+          'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: Colors.grey.shade200,
+            child: Icon(CupertinoIcons.photo, size: 48.sp, color: Colors.grey),
+          ),
         ),
       ),
     );
@@ -178,18 +181,26 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                         target: _destination,
                         zoom: 11,
                       ),
-                      onMapCreated: (controller) =>
-                          _mapController = controller,
+                      onMapCreated: (controller) => _mapController = controller,
                       annotations: {
                         Annotation(
-                          annotationId:
-                               AnnotationId('destination'),
+                          annotationId: AnnotationId('destination'),
                           position: _destination,
                         ),
                       },
                       mapType: MapType.standard,
-                      zoomGesturesEnabled: true,
+                      zoomGesturesEnabled: false,
                       scrollGesturesEnabled: true,
+                      onTap: (_) async {
+                        // Open Apple Maps app with the destination coordinates
+                        final uri = Uri.parse(
+                          'https://maps.apple.com/?q=${_destination.latitude},${_destination.longitude}',
+                        );
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -197,10 +208,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
               SizedBox(width: 12.w),
 
               // Weather
-              Expanded(
-                flex: 4,
-                child: _buildWeatherCard(),
-              ),
+              Expanded(flex: 4, child: _buildWeatherCard()),
             ],
           ),
           SizedBox(height: 20.h),
@@ -212,8 +220,6 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
           // Divider
           Divider(color: Colors.grey.shade100, thickness: 1),
           SizedBox(height: 16.h),
-
-        
         ],
       ),
     );
@@ -290,8 +296,8 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
   Widget _buildServiceButtons() {
     final services = [
       {'icon': '🎫', 'label': 'Ticket', 'color': 0xFFFFF3EE},
-      {'icon': '🏨', 'label': 'Hotel',  'color': 0xFFEEF3FF},
-      {'icon': '🍽️', 'label': 'Meal',   'color': 0xFFFFEEEE},
+      {'icon': '🏨', 'label': 'Hotel', 'color': 0xFFEEF3FF},
+      {'icon': '🍽️', 'label': 'Meal', 'color': 0xFFFFEEEE},
     ];
 
     return Row(
@@ -332,7 +338,6 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
     );
   }
 
-  
   // ── Floating Icon Button ──────────────────────────────────────────────────
   Widget _floatingIconButton({
     required IconData icon,

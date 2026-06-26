@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
@@ -21,19 +20,12 @@ class _SettingPageState extends State<SettingPage> {
   String _selectedCurrency = 'USD – US Dollar';
   String _selectedTheme = 'Light';
 
-  // ── Palette (matches app)──────────────────────────────────────────────────
-  static const Color _bg = Color(0xFFF2F4EF);
-  static const Color _card = Colors.white;
-  static const Color _accent = Color(0xFFF8774F);
-  static const Color _textPrimary = Color(0xFF1A1A2E);
-  static const Color _textSecondary = Color(0xFF8A8A9A);
-
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _bg,
-      body: SafeArea(
+    final theme = Theme.of(context);
+    return CupertinoPageScaffold(
+      child: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
@@ -43,7 +35,7 @@ class _SettingPageState extends State<SettingPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildProfileCard(),
+                    _buildProfileCard(theme: theme),
                     SizedBox(height: 24.h),
                     _sectionLabel('Preferences'),
                     SizedBox(height: 10.h),
@@ -59,19 +51,8 @@ class _SettingPageState extends State<SettingPage> {
                     SizedBox(height: 24.h),
                     _sectionLabel('Support & Legal'),
                     SizedBox(height: 10.h),
-                    _buildSupportCard(),
-                    SizedBox(height: 24.h),
                     _buildLogoutButton(),
                     SizedBox(height: 8.h),
-                    Center(
-                      child: Text(
-                        'WanderAI v1.0.0',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11.sp,
-                          color: _textSecondary,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -93,7 +74,6 @@ class _SettingPageState extends State<SettingPage> {
             style: GoogleFonts.poppins(
               fontSize: 26.sp,
               fontWeight: FontWeight.bold,
-              color: _textPrimary,
             ),
           ),
           const Spacer(),
@@ -104,10 +84,10 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   // ── Profile Card ───────────────────────────────────────────────────────────
-  Widget _buildProfileCard() {
+  Widget _buildProfileCard({required ThemeData theme}) {
     return Container(
       padding: EdgeInsets.all(16.r),
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(theme: theme),
       child: Row(
         children: [
           Stack(
@@ -115,7 +95,7 @@ class _SettingPageState extends State<SettingPage> {
               CircleAvatar(
                 radius: 30.r,
                 backgroundImage: const NetworkImage(
-                  'https://randomuser.me/api/portraits/men/32.jpg',
+                  'https://i.pinimg.com/736x/6f/f0/f8/6ff0f878005d7059b0d85283438059f3.jpg',
                 ),
               ),
               Positioned(
@@ -123,10 +103,7 @@ class _SettingPageState extends State<SettingPage> {
                 right: 0,
                 child: Container(
                   padding: EdgeInsets.all(4.r),
-                  decoration: const BoxDecoration(
-                    color: _accent,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: const BoxDecoration(shape: BoxShape.circle),
                   child: Icon(
                     CupertinoIcons.pencil,
                     size: 10.sp,
@@ -142,34 +119,26 @@ class _SettingPageState extends State<SettingPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'James Kir',
+                  'Ahmed Hegazy',
                   style: GoogleFonts.poppins(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
-                    color: _textPrimary,
                   ),
                 ),
                 Text(
-                  'james.kir@email.com',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.sp,
-                    color: _textSecondary,
-                  ),
+                  'ahmedrady03@email.com',
+                  style: GoogleFonts.poppins(fontSize: 12.sp),
                 ),
                 SizedBox(height: 4.h),
                 Row(
                   children: [
-                    Icon(
-                      CupertinoIcons.map_pin_ellipse,
-                      size: 12.sp,
-                      color: _accent,
-                    ),
+                    Icon(CupertinoIcons.map_pin_ellipse, size: 12.sp),
                     SizedBox(width: 4.w),
                     Text(
                       'Berlin, Germany',
                       style: GoogleFonts.poppins(
                         fontSize: 11.sp,
-                        color: _accent,
+
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -178,11 +147,7 @@ class _SettingPageState extends State<SettingPage> {
               ],
             ),
           ),
-          Icon(
-            CupertinoIcons.chevron_right,
-            size: 16.sp,
-            color: _textSecondary,
-          ),
+          Icon(CupertinoIcons.chevron_right, size: 16.sp),
         ],
       ),
     );
@@ -190,8 +155,9 @@ class _SettingPageState extends State<SettingPage> {
 
   // ── Preferences Card ───────────────────────────────────────────────────────
   Widget _buildPreferencesCard() {
+    final theme = Theme.of(context);
     return Container(
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(theme: theme),
       child: Column(
         children: [
           _buildPickerTile(
@@ -200,7 +166,7 @@ class _SettingPageState extends State<SettingPage> {
             iconColor: const Color(0xFF4A90D9),
             title: 'Language',
             value: _selectedLanguage,
-            options: ['English', 'German', 'Arabic', 'French', 'Spanish'],
+            options: ['English', 'German', 'Arabic'],
             onChanged: (val) => setState(() => _selectedLanguage = val),
           ),
           _divider(),
@@ -210,13 +176,7 @@ class _SettingPageState extends State<SettingPage> {
             iconColor: const Color(0xFF4CAF50),
             title: 'Currency',
             value: _selectedCurrency,
-            options: [
-              'USD – US Dollar',
-              'EUR – Euro',
-              'GBP – British Pound',
-              'EGP – Egyptian Pound',
-              'DKK – Danish Krone',
-            ],
+            options: ['USD – US Dollar', 'EUR – Euro', 'EGP – Egyptian Pound'],
             onChanged: (val) => setState(() => _selectedCurrency = val),
           ),
           _divider(),
@@ -237,13 +197,13 @@ class _SettingPageState extends State<SettingPage> {
   // ── Notifications Card ─────────────────────────────────────────────────────
   Widget _buildNotificationsCard() {
     return Container(
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(theme: Theme.of(context)),
       child: Column(
         children: [
           _buildToggleTile(
             icon: CupertinoIcons.bell_fill,
             iconBg: const Color(0xFFFFF3E8),
-            iconColor: _accent,
+            iconColor: const Color(0xFFFF9800),
             title: 'Push Notifications',
             subtitle: 'Deals, updates & alerts',
             value: _notificationsEnabled,
@@ -267,7 +227,7 @@ class _SettingPageState extends State<SettingPage> {
   // ── Trip Tools Card ────────────────────────────────────────────────────────
   Widget _buildTripToolsCard() {
     return Container(
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(theme: Theme.of(context)),
       child: Column(
         children: [
           _buildToggleTile(
@@ -288,69 +248,6 @@ class _SettingPageState extends State<SettingPage> {
             subtitle: 'Needed for nearby places',
             value: _locationAccess,
             onChanged: (val) => setState(() => _locationAccess = val),
-          ),
-          _divider(),
-          _buildNavTile(
-            icon: CupertinoIcons.bag_fill,
-            iconBg: const Color(0xFFFFF8E8),
-            iconColor: const Color(0xFFFFC107),
-            title: 'Packing Checklist',
-            subtitle: 'Manage your travel essentials',
-            onTap: () {},
-          ),
-          _divider(),
-          _buildNavTile(
-            icon: CupertinoIcons.airplane,
-            iconBg: const Color(0xFFF3E8FF),
-            iconColor: const Color(0xFF9C27B0),
-            title: 'Flight Preferences',
-            subtitle: 'Seat, meal & class defaults',
-            onTap: () {},
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Support Card ───────────────────────────────────────────────────────────
-  Widget _buildSupportCard() {
-    return Container(
-      decoration: _cardDecoration(),
-      child: Column(
-        children: [
-          _buildNavTile(
-            icon: CupertinoIcons.question_circle_fill,
-            iconBg: const Color(0xFFE8F4FF),
-            iconColor: const Color(0xFF4A90D9),
-            title: 'Help & Support',
-            subtitle: 'FAQs, contact us',
-            onTap: () {},
-          ),
-          _divider(),
-          _buildNavTile(
-            icon: CupertinoIcons.lock_shield_fill,
-            iconBg: const Color(0xFFE8FFE8),
-            iconColor: const Color(0xFF4CAF50),
-            title: 'Privacy & Security',
-            subtitle: 'Data & permissions',
-            onTap: () {},
-          ),
-          _divider(),
-          _buildNavTile(
-            icon: CupertinoIcons.doc_text_fill,
-            iconBg: const Color(0xFFFFF3E8),
-            iconColor: _accent,
-            title: 'Terms & Conditions',
-            onTap: () {},
-          ),
-          _divider(),
-          _buildNavTile(
-            icon: CupertinoIcons.star_fill,
-            iconBg: const Color(0xFFFFF8E8),
-            iconColor: const Color(0xFFFFC107),
-            title: 'Rate the App',
-            subtitle: 'Tell us what you think',
-            onTap: () {},
           ),
         ],
       ),
@@ -402,6 +299,7 @@ class _SettingPageState extends State<SettingPage> {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
+    final theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
@@ -417,15 +315,15 @@ class _SettingPageState extends State<SettingPage> {
                   style: GoogleFonts.poppins(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
-                    color: _textPrimary,
                   ),
                 ),
                 if (subtitle != null)
                   Text(
                     subtitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 11.sp,
-                      color: _textSecondary,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey.shade600,
                     ),
                   ),
               ],
@@ -435,62 +333,11 @@ class _SettingPageState extends State<SettingPage> {
             scale: 0.85,
             child: CupertinoSwitch(
               value: value,
-              activeColor: _accent,
+              activeColor: const Color(0xFFFF9800),
               onChanged: onChanged,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNavTile({
-    required IconData icon,
-    required Color iconBg,
-    required Color iconColor,
-    required String title,
-    String? subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        child: Row(
-          children: [
-            _iconBox(icon, iconBg, iconColor),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: _textPrimary,
-                    ),
-                  ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.poppins(
-                        fontSize: 11.sp,
-                        color: _textSecondary,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Icon(
-              CupertinoIcons.chevron_right,
-              size: 16.sp,
-              color: _textSecondary,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -504,8 +351,10 @@ class _SettingPageState extends State<SettingPage> {
     required List<String> options,
     required ValueChanged<String> onChanged,
   }) {
+    final theme = Theme.of(context);
     return InkWell(
-      onTap: () => _showPicker(title, options, value, onChanged),
+      onTap: () =>
+          _showPicker(title, options, value, onChanged, Theme.of(context)),
       borderRadius: BorderRadius.circular(16.r),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -517,26 +366,20 @@ class _SettingPageState extends State<SettingPage> {
               child: Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: _textPrimary,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
             Text(
               value,
-              style: GoogleFonts.poppins(
-                fontSize: 13.sp,
-                color: _accent,
-                fontWeight: FontWeight.w500,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w300,
               ),
             ),
             SizedBox(width: 4.w),
-            Icon(
-              CupertinoIcons.chevron_right,
-              size: 16.sp,
-              color: _textSecondary,
-            ),
+            Icon(CupertinoIcons.chevron_right, size: 16.sp),
           ],
         ),
       ),
@@ -549,6 +392,7 @@ class _SettingPageState extends State<SettingPage> {
     List<String> options,
     String current,
     ValueChanged<String> onChanged,
+    ThemeData theme,
   ) {
     showModalBottomSheet(
       context: context,
@@ -556,7 +400,7 @@ class _SettingPageState extends State<SettingPage> {
       builder: (_) => Container(
         padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 32.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
         ),
         child: Column(
@@ -566,7 +410,7 @@ class _SettingPageState extends State<SettingPage> {
               width: 36.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -576,7 +420,6 @@ class _SettingPageState extends State<SettingPage> {
               style: GoogleFonts.poppins(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
-                color: _textPrimary,
               ),
             ),
             SizedBox(height: 12.h),
@@ -587,7 +430,9 @@ class _SettingPageState extends State<SettingPage> {
                   opt,
                   style: GoogleFonts.poppins(
                     fontSize: 14.sp,
-                    color: opt == current ? _accent : _textPrimary,
+                    color: opt == current
+                        ? const Color(0xFFFF9800)
+                        : const Color(0xFF555555),
                     fontWeight: opt == current
                         ? FontWeight.w600
                         : FontWeight.w400,
@@ -596,7 +441,7 @@ class _SettingPageState extends State<SettingPage> {
                 trailing: opt == current
                     ? Icon(
                         CupertinoIcons.checkmark_alt,
-                        color: _accent,
+                        color: const Color(0xFFFF9800),
                         size: 18.sp,
                       )
                     : null,
@@ -613,15 +458,16 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-  Widget _sectionLabel(String text) => Text(
-    text,
-    style: GoogleFonts.poppins(
-      fontSize: 13.sp,
-      fontWeight: FontWeight.w600,
-      color: _textSecondary,
-      letterSpacing: 0.4,
-    ),
-  );
+  Widget _sectionLabel(String text) {
+    final theme = Theme.of(context);
+    return Text(
+      text,
+      style: theme.textTheme.titleMedium?.copyWith(
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
 
   Widget _iconBox(IconData icon, Color bg, Color color) => Container(
     padding: EdgeInsets.all(8.r),
@@ -638,7 +484,7 @@ class _SettingPageState extends State<SettingPage> {
         child: Container(
           padding: EdgeInsets.all(10.r),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
@@ -648,7 +494,7 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ],
           ),
-          child: Icon(icon, size: 20.sp, color: _textPrimary),
+          child: Icon(icon, size: 20.sp),
         ),
       );
 
@@ -659,8 +505,8 @@ class _SettingPageState extends State<SettingPage> {
     indent: 54.w,
   );
 
-  BoxDecoration _cardDecoration() => BoxDecoration(
-    color: _card,
+  BoxDecoration _cardDecoration({required ThemeData theme}) => BoxDecoration(
+    color: theme.cardColor,
     borderRadius: BorderRadius.circular(20.r),
     boxShadow: [
       BoxShadow(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:rahal/core/app_theme.dart';
 import 'package:rahal/screens/navigation_bar.dart';
 
 void main() {
@@ -20,15 +21,28 @@ class Rahal extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Rahal',
-          theme: ThemeData(
-            splashFactory: InkSplash.splashFactory,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
+
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: ThemeMode.system,
+
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            overscroll: false,
           ),
+
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(1)),
+              child: child!,
+            );
+          },
+
           home: child,
         );
       },
-      child: NavigationBarPage(),
+      child: const NavigationBarPage(),
     );
   }
 }
