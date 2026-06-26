@@ -17,12 +17,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController searchController = TextEditingController();
- 
+
   int _selectedCountryIndex = 0;
   bool _isFavorite = false;
-
-  static const Color _accent = Color(0xFFF8774F);
-  static const Color _bg = Color(0xFFF5F5F0);
 
   final List<Map<String, String>> countryList = [
     {"name": "Germany", "flag": "https://flagsapi.com/DE/flat/64.png"},
@@ -43,7 +40,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
@@ -64,7 +60,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-     
     );
   }
 
@@ -217,11 +212,15 @@ class _HomePageState extends State<HomePage> {
           style: GoogleFonts.poppins(
             fontSize: 13.sp,
             fontWeight: FontWeight.w600,
-            color: _accent,
+            color: AppColors.orangeAccentColor,
           ),
         ),
         SizedBox(width: 2.w),
-        Icon(Icons.arrow_forward_ios_rounded, color: _accent, size: 13.sp),
+        Icon(
+          Icons.arrow_forward_ios_rounded,
+          color: AppColors.orangeAccentColor,
+          size: 13.sp,
+        ),
       ],
     );
   }
@@ -311,7 +310,9 @@ class _HomePageState extends State<HomePage> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.push(
                       context,
-                      CupertinoPageRoute(builder: (context) => DestinationDetailsScreen()),
+                      CupertinoPageRoute(
+                        builder: (context) => DestinationDetailsScreen(),
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF8774F),
@@ -408,4 +409,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
