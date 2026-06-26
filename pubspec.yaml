@@ -37,6 +37,11 @@ dependencies:
   google_fonts: ^8.1.0
   flutter_neumorphic_plus: ^3.5.0
   easy_localization: ^3.0.8
+  flutter_screenutil_plus: ^1.5.0
+  font_awesome_flutter: ^11.0.0
+  fluentui_system_icons: ^1.1.273
+  apple_maps_flutter: ^1.4.0
+  platform_maps_flutter: ^1.0.2
 
 
 dev_dependencies:
