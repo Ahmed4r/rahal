@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rahal/screens/home/home_page.dart';
-import 'package:rahal/screens/settings/setting__page.dart';
+import 'package:rahal/screens/settings/setting_page.dart';
 
 class NavigationBarPage extends StatefulWidget {
   const NavigationBarPage({super.key});
@@ -62,7 +62,7 @@ class _NavigationBarState extends State<NavigationBarPage> {
         selectedLabelStyle: GoogleFonts.roboto(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          color: Theme.of(context).bottomAppBarTheme.color,
+          color: Colors.orange,
         ),
         unselectedLabelStyle: GoogleFonts.roboto(
           fontSize: 12,

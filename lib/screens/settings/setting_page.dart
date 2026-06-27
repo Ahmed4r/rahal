@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:rahal/screens/settings/provider/setting_provider.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -180,14 +182,31 @@ class _SettingPageState extends State<SettingPage> {
             onChanged: (val) => setState(() => _selectedCurrency = val),
           ),
           _divider(),
-          _buildPickerTile(
-            icon: CupertinoIcons.circle_lefthalf_fill,
-            iconBg: const Color(0xFFF3E8FF),
-            iconColor: const Color(0xFF9C27B0),
-            title: 'Theme',
-            value: _selectedTheme,
-            options: ['Light', 'Dark', 'System Default'],
-            onChanged: (val) => setState(() => _selectedTheme = val),
+          Consumer<SettingsProvider>(
+            builder: (context, settingsProvider, _) {
+              return _buildPickerTile(
+                icon: CupertinoIcons.circle_lefthalf_fill,
+                iconBg: const Color(0xFFF3E8FF),
+                iconColor: const Color(0xFF9C27B0),
+                title: 'Theme',
+                value: _selectedTheme,
+                options: const ['Light', 'Dark', 'System Default'],
+                onChanged: (val) async {
+                  setState(() => _selectedTheme = val);
+
+                  switch (val) {
+                    case 'Light':
+                      settingsProvider.setThemeMode(ThemeMode.light);
+                      break;
+                    case 'Dark':
+                      settingsProvider.setThemeMode(ThemeMode.dark);
+                      break;
+                    default:
+                      settingsProvider.setThemeMode(ThemeMode.system);
+                  }
+                },
+              );
+            },
           ),
         ],
       ),
@@ -349,7 +368,7 @@ class _SettingPageState extends State<SettingPage> {
     required String title,
     required String value,
     required List<String> options,
-    required ValueChanged<String> onChanged,
+    required Function(String) onChanged,
   }) {
     final theme = Theme.of(context);
     return InkWell(

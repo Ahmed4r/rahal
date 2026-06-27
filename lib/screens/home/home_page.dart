@@ -1,13 +1,19 @@
+import 'dart:developer';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rahal/model/destination_model.dart';
 import 'package:rahal/screens/details/destination_details.dart';
+import 'package:rahal/service/location_service.dart';
 import 'package:rahal/shared/app_colors.dart';
 import 'package:rahal/widgets/circle_container.dart';
 import 'package:rahal/widgets/primary_button.dart';
 import 'package:rahal/widgets/text_field.dart';
+import 'package:toasti_overlay/toast.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,9 +24,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController searchController = TextEditingController();
+  final LocationService locationService = LocationService();
 
   int _selectedCountryIndex = 0;
   bool _isFavorite = false;
+  final FocusNode focusNode = FocusNode();
 
   final List<Map<String, String>> countryList = [
     {"name": "Germany", "flag": "https://flagsapi.com/DE/flat/64.png"},
@@ -32,34 +40,129 @@ class _HomePageState extends State<HomePage> {
     {"name": "Egypt", "flag": "https://flagsapi.com/EG/flat/64.png"},
   ];
 
+  void requestLocationPermission() async {
+    bool granted = await locationService.requestLocationPermission();
+    if (!granted) {
+      showToasti(
+        // ignore: use_build_context_synchronously
+        context,
+        title: "Location Permission Denied",
+        description: "Please enable location permission to use this feature.",
+        type: ToastType.error,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  var currentCity = '--';
+
+  List<DestinationModel> destinations = [
+    DestinationModel(
+      id: 1,
+      name: 'Whispering Fields',
+      imageUrl:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Museumsinsel_Berlin_Juli_2021_1_%28cropped%29_b.jpg/330px-Museumsinsel_Berlin_Juli_2021_1_%28cropped%29_b.jpg',
+      rating: 4.9,
+      isFavorite: false,
+      location: 'Germany',
+      description:
+          'Fictional countryside gem surrounded by windmills, lakes, and soft green hills.',
+      price: '\$1200',
+      duration: '27 June – 12 May',
+    ),
+    DestinationModel(
+      id: 2,
+      name: 'Sunset Beach',
+      imageUrl:
+          'https://content.r9cdn.net/rimg/dimg/39/86/ae1975d6-city-26939-15516fe0259.jpg?width=1366&height=768&crop=true&cropStrategy=attention',
+      rating: 4.7,
+      isFavorite: true,
+      location: 'Frankfurt',
+      description:
+          'A serene beach destination with golden sands, perfect for relaxation and water sports.',
+      price: '\$1800',
+
+      duration: '15 July – 30 July',
+    ),
+  ];
+
+  void getCurrentCity() async {
+    String city = await LocationService.getCurrentCity();
+    if (!mounted) return;
+    showToasti(
+      context,
+      title: "City Detected",
+      description: "Your current city is $city.",
+      type: ToastType.success,
+      duration: const Duration(seconds: 3),
+    );
+    setState(() {
+      formatCityName(city);
+    });
+  }
+
+  void formatCityName(String city) {
+    if (city.length > 20) {
+      currentCity = '${city.substring(0, 15)}...';
+    } else {
+      currentCity = city;
+    }
+  }
+
   @override
   void dispose() {
     searchController.dispose();
+    focusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    requestLocationPermission();
+    getCurrentCity();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return CupertinoPageScaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildTopBar(theme),
-              SizedBox(height: 16.h),
-              buildSearchBar(theme),
-              SizedBox(height: 16.h),
-              buildCountryListView(theme),
-              SizedBox(height: 24.h),
-              buildSectionHeader(theme),
-              SizedBox(height: 12.h),
-              buildPopularDestinations(theme),
-              SizedBox(height: 20.h),
-            ],
+    return GestureDetector(
+      onTap: () {
+        focusNode.unfocus();
+      },
+      child: CupertinoPageScaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildTopBar(theme),
+                SizedBox(height: 10.h),
+                buildSearchBar(theme),
+                SizedBox(height: 16.h),
+                buildCountryListView(theme),
+                SizedBox(height: 20.h),
+                buildSectionHeader(theme),
+                SizedBox(
+                  width: 290.w,
+                  height: 400.h,
+                  child: ListView.separated(
+                    // shrinkWrap: true,
+                    // physics: const NeverScrollableScrollPhysics(),
+                    itemCount: destinations.length,
+                    scrollDirection: Axis.horizontal,
+                    separatorBuilder: (context, index) => SizedBox(width: 30.w),
+                    itemBuilder: (context, index) {
+                      final destination = destinations[index];
+                      return buildPopularDestinations(theme, destination);
+                    },
+                  ),
+                ),
+                SizedBox(height: 20.h),
+              ],
+            ),
           ),
         ),
       ),
@@ -77,19 +180,25 @@ class _HomePageState extends State<HomePage> {
             Row(
               children: [
                 Text(
-                  "Berlin",
+                  currentCity,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
-                    fontSize: 24.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
+                    color: theme.textTheme.titleMedium?.color,
                   ),
                 ),
-                Icon(CupertinoIcons.chevron_down, size: 26.sp),
+                Icon(CupertinoIcons.chevron_down, size: 20.sp),
               ],
             ),
           ],
         ),
         const Spacer(),
-        CircleContainer(child: Icon(CupertinoIcons.bell, size: 20.sp)),
+        CircleContainer(
+          color: Color(0xffF5F5F5),
+          child: Icon(CupertinoIcons.bell, size: 20.sp),
+        ),
         SizedBox(width: 10.w),
         CircleAvatar(
           radius: 22.r,
@@ -111,11 +220,15 @@ class _HomePageState extends State<HomePage> {
             child: CustomeTextField(
               title: 'Search',
               controller: searchController,
+              focusNode: focusNode,
             ),
           ),
         ),
         SizedBox(width: 12.w),
-        CircleContainer(child: Icon(FluentIcons.filter_32_filled, size: 20.sp)),
+        CircleContainer(
+          color: Color(0xffF5F5F5),
+          child: Icon(FluentIcons.filter_32_filled, size: 20.sp),
+        ),
       ],
     );
   }
@@ -136,8 +249,21 @@ class _HomePageState extends State<HomePage> {
               duration: const Duration(milliseconds: 200),
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.black : Colors.white,
+                color: theme.brightness == Brightness.light
+                    ? (isSelected ? Colors.black : Colors.white)
+                    : (isSelected
+                          ? null
+                          : const Color.fromARGB(255, 21, 21, 22)),
                 borderRadius: BorderRadius.circular(30.r),
+                border: theme.brightness == Brightness.dark
+                    ? Border.all(
+                        color: isSelected
+                            ? AppColors.orangeAccentColor
+                            : Colors.transparent,
+                        width: 1.5,
+                      )
+                    : null,
+
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.06),
@@ -163,7 +289,6 @@ class _HomePageState extends State<HomePage> {
                     style: GoogleFonts.poppins(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : Colors.black,
                     ),
                   ),
                 ],
@@ -204,7 +329,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Destination Card ───────────────────────────────────────────────────────
-  Widget buildPopularDestinations(ThemeData theme) {
+  Widget buildPopularDestinations(
+    ThemeData theme,
+    DestinationModel destination,
+  ) {
     final double imageHeight = 180.h;
 
     final double overlap = imageHeight * 0.5; // قد ما الصورة هتطلع برا
@@ -216,15 +344,17 @@ class _HomePageState extends State<HomePage> {
         // ── Card (يبدأ من نص الصورة) ──────────────────────────────────────
         Container(
           margin: EdgeInsets.only(top: overlap), // ← ينزل تحت الصورة
-          width: double.infinity,
+          width: 290.w,
           decoration: BoxDecoration(
-            color: theme.cardColor,
+            color: theme.brightness == Brightness.light
+                ? AppColors.cardColor
+                : theme.cardColor,
             borderRadius: BorderRadius.circular(28.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 6),
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 30.r,
+                offset: const Offset(20, 26),
               ),
             ],
           ),
@@ -238,10 +368,11 @@ class _HomePageState extends State<HomePage> {
                     Text('🌾', style: TextStyle(fontSize: 18.sp)),
                     SizedBox(width: 6.w),
                     Text(
-                      'Whispering Fields',
+                      destination.name,
                       style: GoogleFonts.poppins(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
+                        color: theme.textTheme.titleMedium?.color,
                       ),
                     ),
                   ],
@@ -253,20 +384,24 @@ class _HomePageState extends State<HomePage> {
                     Text('🇩🇪', style: TextStyle(fontSize: 14.sp)),
                     SizedBox(width: 4.w),
                     Text(
-                      'Germany',
-                      style: GoogleFonts.poppins(fontSize: 13.sp),
+                      destination.location,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13.sp,
+                        color: theme.textTheme.titleMedium?.color,
+                      ),
                     ),
                   ],
                 ),
                 SizedBox(height: 10.h),
                 Text(
-                  'Fictional countryside gem surrounded by windmills, lakes, and soft green hills.',
+                  destination.description,
+                  maxLines: 2,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(fontSize: 12.sp, height: 1.6),
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  '27 June – 12 May',
+                  destination.duration,
                   style: GoogleFonts.poppins(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
@@ -277,79 +412,29 @@ class _HomePageState extends State<HomePage> {
                   width: double.infinity,
                   height: 50.h,
                   child: PrimaryButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) => DestinationDetailsScreen(),
-                      ),
-                    ),
+                    onPressed: () async {
+                      await HapticFeedback.lightImpact();
+                      if (!mounted) return;
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => DestinationDetailsScreen(
+                            destination: destination,
+                          ),
+                        ),
+                      );
+                    },
                     child: Text(
                       'Show details',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-        Positioned(
-          top: 100.h,
-          left: 10.w,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.star_rounded, color: Colors.amber, size: 20.sp),
-                SizedBox(width: 3.w),
-                Text(
-                  '4.9',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // ❤️ Favorite badge
-        Positioned(
-          top: 100.h,
-          right: 10.w,
-          child: GestureDetector(
-            onTap: () => setState(() => _isFavorite = !_isFavorite),
-            child: Container(
-              padding: EdgeInsets.all(8.r),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: Icon(
-                _isFavorite
-                    ? CupertinoIcons.heart_fill
-                    : Icons.favorite_border_rounded,
-                color: Colors.redAccent,
-                size: 25.sp,
-              ),
             ),
           ),
         ),
@@ -360,16 +445,74 @@ class _HomePageState extends State<HomePage> {
           child:
               // الصورة
               Hero(
-                tag: 'destination_image',
+                tag: 'destination_${destination.id}',
                 child: CircleAvatar(
                   radius: 90.r,
-                  backgroundImage: NetworkImage(
-                    'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
-                  ),
+                  backgroundImage: NetworkImage(destination.imageUrl),
                 ),
               ),
 
           // ⭐ Rating badge
+        ),
+        // ❤️ Favorite badge
+        Positioned(
+          top: 100.h,
+          right: 10.w,
+          child: GestureDetector(
+            onTap: () => setState(
+              () => destination.isFavorite = !destination.isFavorite,
+            ),
+            child: Container(
+              padding: EdgeInsets.all(8.r),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.01),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              child: Icon(
+                destination.isFavorite
+                    ? CupertinoIcons.heart_fill
+                    : Icons.favorite_border_rounded,
+                color: Colors.redAccent,
+                size: 25.sp,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 100.h,
+          left: 10.w,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 6),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.star_rounded, color: Colors.deepOrange, size: 20.sp),
+                SizedBox(width: 3.w),
+                Text(
+                  destination.rating.toString(),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: theme.textTheme.titleMedium?.color,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

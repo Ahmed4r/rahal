@@ -3,10 +3,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rahal/model/destination_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DestinationDetailsScreen extends StatefulWidget {
-  const DestinationDetailsScreen({super.key});
+  final DestinationModel destination;
+  const DestinationDetailsScreen({super.key, required this.destination});
 
   @override
   State<DestinationDetailsScreen> createState() =>
@@ -25,7 +27,6 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F0),
       body: Stack(
         children: [
           // ── Full layout ──────────────────────────────────────────────────
@@ -59,7 +60,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                     icon: _isFavorite
                         ? CupertinoIcons.heart_fill
                         : CupertinoIcons.heart,
-                    iconColor: _isFavorite ? Colors.redAccent : Colors.black87,
+
                     onTap: () => setState(() => _isFavorite = !_isFavorite),
                   ),
                 ],
@@ -74,14 +75,14 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
   // ── Hero Image ────────────────────────────────────────────────────────────
   Widget _buildHeroImage() {
     return Hero(
-      tag: 'destination_image',
+      tag: 'destination_${widget.destination.id}',
       child: SizedBox(
         height: 280.h,
         width: double.infinity,
         child: Image.network(
-          'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800',
+          widget.destination.imageUrl,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
+          errorBuilder: (context, error, stackTrace) => Container(
             color: Colors.grey.shade200,
             child: Icon(CupertinoIcons.photo, size: 48.sp, color: Colors.grey),
           ),
@@ -97,7 +98,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
       margin: EdgeInsets.only(top: 0),
       padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 32.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
         boxShadow: [
           BoxShadow(
@@ -116,7 +117,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
               width: 36.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -126,11 +127,11 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
           // Title
           Center(
             child: Text(
-              'Sunny Ridge Farm',
+              widget.destination.name,
               style: GoogleFonts.poppins(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
           ),
@@ -144,10 +145,10 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                 Text('🇩🇪', style: TextStyle(fontSize: 16.sp)),
                 SizedBox(width: 6.w),
                 Text(
-                  'Germany',
+                  widget.destination.location,
                   style: GoogleFonts.poppins(
                     fontSize: 14.sp,
-                    color: Colors.black54,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ],
@@ -157,10 +158,10 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
 
           // Description
           Text(
-            'Fictional countryside gem surrounded by windmills, lakes, and soft green hills.',
+            widget.destination.description,
             style: GoogleFonts.poppins(
               fontSize: 13.sp,
-              color: Colors.black54,
+              color: Theme.of(context).textTheme.bodySmall?.color,
               height: 1.6,
             ),
           ),
@@ -218,7 +219,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
           SizedBox(height: 20.h),
 
           // Divider
-          Divider(color: Colors.grey.shade100, thickness: 1),
+          Divider(color: Theme.of(context).dividerColor, thickness: 1),
           SizedBox(height: 16.h),
         ],
       ),
@@ -231,8 +232,9 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
       height: 130.h,
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F8F8),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.grey, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +249,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
             ],
@@ -259,7 +261,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                 '8:40 AM',
                 style: GoogleFonts.poppins(
                   fontSize: 11.sp,
-                  color: Colors.black45,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
               ),
               Row(
@@ -270,7 +272,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 30.sp,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
                     ),
                   ),
                   Padding(
@@ -279,7 +281,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                       '°C',
                       style: GoogleFonts.poppins(
                         fontSize: 14.sp,
-                        color: Colors.black54,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                     ),
                   ),
@@ -294,6 +296,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
 
   // ── Service Buttons ───────────────────────────────────────────────────────
   Widget _buildServiceButtons() {
+    final theme = Theme.of(context);
     final services = [
       {'icon': '🎫', 'label': 'Ticket', 'color': 0xFFFFF3EE},
       {'icon': '🏨', 'label': 'Hotel', 'color': 0xFFEEF3FF},
@@ -310,7 +313,11 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 decoration: BoxDecoration(
-                  color: Color(s['color'] as int),
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.grey.shade800
+                      : s['color'] != null
+                      ? Color(s['color'] as int)
+                      : theme.cardColor,
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Column(
@@ -325,7 +332,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
                   ],
@@ -342,14 +349,13 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
   Widget _floatingIconButton({
     required IconData icon,
     required VoidCallback onTap,
-    Color iconColor = Colors.black87,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(10.r),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
@@ -359,7 +365,7 @@ class _DestinationDetailsScreenState extends State<DestinationDetailsScreen> {
             ),
           ],
         ),
-        child: Icon(icon, size: 20.sp, color: iconColor),
+        child: Icon(icon, size: 20.sp),
       ),
     );
   }

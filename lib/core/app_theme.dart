@@ -63,7 +63,7 @@ class AppTheme {
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Color(0xffF5F5F5),
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       hintStyle: GoogleFonts.poppins(
         fontSize: 14,
@@ -103,20 +103,20 @@ class AppTheme {
     brightness: Brightness.dark,
     splashFactory: NoSplash.splashFactory,
 
-    scaffoldBackgroundColor: const Color(0xFF1C1C1E),
+    scaffoldBackgroundColor: const Color(0xff0B0C0F),
     canvasColor: const Color(0xFF1C1C1E),
-    cardColor: const Color(0xFF2C2C2E),
+    cardColor: const Color.fromARGB(255, 21, 21, 22),
     dividerColor: const Color(0xFF3A3A3C),
 
     primaryColor: primary,
     bottomAppBarTheme: BottomAppBarThemeData(
-      color: const Color(0xFF1C1C1E),
+      color: const Color(0xff0B0C0F),
       elevation: 0,
       shadowColor: Colors.transparent,
     ),
 
     appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1C1C1E),
+      backgroundColor: const Color.fromARGB(255, 21, 21, 22),
       elevation: 0,
       foregroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
@@ -125,12 +125,12 @@ class AppTheme {
     iconTheme: const IconThemeData(color: Colors.white),
 
     inputDecorationTheme: light.inputDecorationTheme.copyWith(
-      fillColor: const Color(0xFF2C2C2E),
+      fillColor: const Color.fromARGB(255, 21, 21, 22),
       filled: true,
       hintStyle: GoogleFonts.poppins(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: const Color.fromARGB(255, 241, 214, 123),
+        color: const Color(0xFF8E8E93),
       ),
       prefixIconColor: const Color(0xFF8E8E93),
       enabledBorder: OutlineInputBorder(

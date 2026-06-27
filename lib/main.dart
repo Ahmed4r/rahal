@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:rahal/core/app_theme.dart';
 import 'package:rahal/screens/navigation_bar.dart';
+import 'package:rahal/screens/settings/provider/setting_provider.dart';
 
 void main() {
-  runApp(const Rahal());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => SettingsProvider())],
+      child: const Rahal(),
+    ),
+  );
 }
 
 class Rahal extends StatelessWidget {
   const Rahal({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ScreenUtilPlusInit(
@@ -18,31 +24,34 @@ class Rahal extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Rahal',
+        return Consumer<SettingsProvider>(
+          builder: (context, settingsProvider, _) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'Rahal',
 
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: ThemeMode.system,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: settingsProvider.currentThemeMode,
 
-          scrollBehavior: const MaterialScrollBehavior().copyWith(
-            overscroll: false,
-          ),
+              scrollBehavior: const MaterialScrollBehavior().copyWith(
+                overscroll: false,
+              ),
 
-          builder: (context, child) {
-            return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: const TextScaler.linear(1)),
-              child: child!,
+              builder: (context, child) {
+                return MediaQuery(
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(textScaler: const TextScaler.linear(1)),
+                  child: child!,
+                );
+              },
+
+              home: const NavigationBarPage(),
             );
           },
-
-          home: child,
         );
       },
-      child: const NavigationBarPage(),
     );
   }
 }

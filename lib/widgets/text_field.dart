@@ -8,14 +8,17 @@ class CustomeTextField extends StatelessWidget {
     super.key,
     required this.title,
     required this.controller,
+    required this.focusNode,
   });
   final String title;
   final TextEditingController controller;
+  final FocusNode focusNode;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       decoration: InputDecoration(
         hintText: title,
         prefixIcon: Icon(FluentIcons.search_32_filled),
