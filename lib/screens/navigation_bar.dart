@@ -2,6 +2,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:rahal/screens/home/home_page.dart';
 import 'package:rahal/screens/settings/setting_page.dart';
 
@@ -53,33 +54,45 @@ class _NavigationBarState extends State<NavigationBarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedNavIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Theme.of(context).bottomAppBarTheme.color,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        selectedLabelStyle: GoogleFonts.roboto(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: Colors.orange,
-        ),
-        unselectedLabelStyle: GoogleFonts.roboto(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          color: Colors.grey,
-        ),
-        showSelectedLabels: true,
-        useLegacyColorScheme: false,
-        currentIndex: _selectedNavIndex,
-        onTap: _onNavItemTapped,
-        items: items.map((item) {
-          return BottomNavigationBarItem(
-            icon: Icon(item.icon),
-            label: item.label,
-          );
-        }).toList(),
+      bottomNavigationBar: GlassBottomBar(
+        selectedIndex: _selectedNavIndex,
+        onTabSelected: _onNavItemTapped,
+        tabs: items
+            .map(
+              (item) =>
+                  GlassBottomBarTab(icon: Icon(item.icon), label: item.label),
+            )
+            .toList(),
+        quality: GlassQuality.premium,
       ),
+
+      // bottomNavigationBar: BottomNavigationBar(
+      //   type: BottomNavigationBarType.fixed,
+      //   backgroundColor: Theme.of(context).bottomAppBarTheme.color,
+      //   selectedItemColor: Colors.orange,
+      //   unselectedItemColor: Colors.grey,
+      //   showUnselectedLabels: true,
+      //   selectedLabelStyle: GoogleFonts.roboto(
+      //     fontSize: 12,
+      //     fontWeight: FontWeight.w500,
+      //     color: Colors.orange,
+      //   ),
+      //   unselectedLabelStyle: GoogleFonts.roboto(
+      //     fontSize: 12,
+      //     fontWeight: FontWeight.w400,
+      //     color: Colors.grey,
+      //   ),
+      //   showSelectedLabels: true,
+      //   useLegacyColorScheme: false,
+      //   currentIndex: _selectedNavIndex,
+      //   onTap: _onNavItemTapped,
+      //   items: items.map((item) {
+      //     return BottomNavigationBarItem(
+      //       icon: Icon(item.icon),
+      //       label: item.label,
+      //     );
+      //   }).toList(),
+      // ),
     );
   }
 }

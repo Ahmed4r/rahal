@@ -1,18 +1,16 @@
-import 'dart:developer';
-
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:rahal/model/destination_model.dart';
-import 'package:rahal/screens/details/destination_details.dart';
 import 'package:rahal/service/location_service.dart';
 import 'package:rahal/shared/app_colors.dart';
 import 'package:rahal/widgets/circle_container.dart';
-import 'package:rahal/widgets/primary_button.dart';
 import 'package:rahal/widgets/text_field.dart';
+import 'package:rahal/widgets/time_line.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toasti_overlay/toast.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,17 +25,37 @@ class _HomePageState extends State<HomePage> {
   final LocationService locationService = LocationService();
 
   int _selectedCountryIndex = 0;
-  bool _isFavorite = false;
   final FocusNode focusNode = FocusNode();
 
-  final List<Map<String, String>> countryList = [
-    {"name": "Germany", "flag": "https://flagsapi.com/DE/flat/64.png"},
-    {"name": "Denmark", "flag": "https://flagsapi.com/DK/flat/64.png"},
-    {"name": "Sweden", "flag": "https://flagsapi.com/SE/flat/64.png"},
-    {"name": "France", "flag": "https://flagsapi.com/FR/flat/64.png"},
-    {"name": "Japan", "flag": "https://flagsapi.com/JP/flat/64.png"},
-    {"name": "Canada", "flag": "https://flagsapi.com/CA/flat/64.png"},
-    {"name": "Egypt", "flag": "https://flagsapi.com/EG/flat/64.png"},
+  final List<String> feelingList = [
+    "Happy",
+    "Excited",
+    "Relaxed",
+    "Adventurous",
+    "Romantic",
+  ];
+  final List<Map<String, String>> timeLine = [
+    {
+      "time": "9:00 AM",
+      "title": "Happy",
+      "description": "Start your day with a smile!",
+      "image":
+          "https://plus.unsplash.com/premium_photo-1670148434900-5f0af77ba500?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c3BsYXNofGVufDB8fDB8fHww",
+    },
+    {
+      "time": "12:00 AM",
+      "title": "sad",
+      "description": "Start your day with a s!",
+      "image":
+          "https://images.unsplash.com/photo-1459802071246-377c0346da93?q=80&w=818&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
+    {
+      "time": "12:00 AM",
+      "title": "sad",
+      "description": "Start your day with a s!",
+      "image":
+          "https://images.unsplash.com/photo-1459802071246-377c0346da93?q=80&w=818&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    },
   ];
 
   void requestLocationPermission() async {
@@ -87,18 +105,25 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void getCurrentCity() async {
-    String city = await LocationService.getCurrentCity();
-    if (!mounted) return;
-    showToasti(
-      context,
-      title: "City Detected",
-      description: "Your current city is $city.",
-      type: ToastType.success,
-      duration: const Duration(seconds: 3),
-    );
-    setState(() {
-      formatCityName(city);
-    });
+    try {
+      String city = await LocationService.getCurrentCity();
+    
+      if (!mounted) return;
+
+      showToasti(
+        context,
+        title: "City Detected",
+        description: "Your current city is $city.",
+        type: ToastType.success,
+        duration: const Duration(seconds: 3),
+      );
+
+      setState(() {
+        formatCityName(city);
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   void formatCityName(String city) {
@@ -138,28 +163,36 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildTopBar(theme),
+                buildTopBar(theme, currentCity),
                 SizedBox(height: 10.h),
-                buildSearchBar(theme),
+                buildSearchBar(theme, searchController, focusNode),
                 SizedBox(height: 16.h),
-                buildCountryListView(theme),
+                glassCardWeather(theme),
                 SizedBox(height: 20.h),
-                buildSectionHeader(theme),
-                SizedBox(
-                  width: 290.w,
-                  height: 400.h,
-                  child: ListView.separated(
-                    // shrinkWrap: true,
-                    // physics: const NeverScrollableScrollPhysics(),
-                    itemCount: destinations.length,
-                    scrollDirection: Axis.horizontal,
-                    separatorBuilder: (context, index) => SizedBox(width: 30.w),
-                    itemBuilder: (context, index) {
-                      final destination = destinations[index];
-                      return buildPopularDestinations(theme, destination);
-                    },
+                Text(
+                  'How are you feeling today?',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                SizedBox(height: 10.h),
+                buildCountryListView(
+                  theme,
+                  feelingList,
+                  _selectedCountryIndex,
+                  (index) {
+                    setState(() {
+                      _selectedCountryIndex = index;
+                    });
+                  },
+                ),
+                SizedBox(height: 20.h),
+
+                buildSectionHeader(theme),
+                SizedBox(height: 20.h),
+
+                SizedBox(height: 10.h),
+                buildTimeLine(timeLine),
                 SizedBox(height: 20.h),
               ],
             ),
@@ -169,352 +202,272 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ── Top Bar ────────────────────────────────────────────────────────────────
-  Widget buildTopBar(ThemeData theme) {
-    return Row(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Location", style: theme.textTheme.bodyMedium),
-            Row(
+  Widget glassCardWeather(ThemeData theme) {
+    return GlassCard(
+      quality: GlassQuality.standard,
+      // borderRadius: BorderRadius.circular(20.r),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  currentCity,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 20.sp,
+                  'Today in $currentCity',
+                  style: theme.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: theme.textTheme.titleMedium?.color,
                   ),
                 ),
-                Icon(CupertinoIcons.chevron_down, size: 20.sp),
+                Text(
+                  '18 °C',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Sunny',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
-        const Spacer(),
-        CircleContainer(
-          color: Color(0xffF5F5F5),
-          child: Icon(CupertinoIcons.bell, size: 20.sp),
-        ),
-        SizedBox(width: 10.w),
-        CircleAvatar(
-          radius: 22.r,
-          backgroundImage: const NetworkImage(
-            'https://i.pinimg.com/736x/6f/f0/f8/6ff0f878005d7059b0d85283438059f3.jpg',
           ),
-        ),
-      ],
-    );
-  }
-
-  // ── Search Bar ─────────────────────────────────────────────────────────────
-  Widget buildSearchBar(ThemeData theme) {
-    return Row(
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: 52.h,
-            child: CustomeTextField(
-              title: 'Search',
-              controller: searchController,
-              focusNode: focusNode,
-            ),
+          Icon(
+            CupertinoIcons.sun_max_fill,
+            size: 50.sp,
+            color: Colors.orangeAccent,
           ),
-        ),
-        SizedBox(width: 12.w),
-        CircleContainer(
-          color: Color(0xffF5F5F5),
-          child: Icon(FluentIcons.filter_32_filled, size: 20.sp),
-        ),
-      ],
-    );
-  }
-
-  // ── Country Filter Chips ───────────────────────────────────────────────────
-  Widget buildCountryListView(ThemeData theme) {
-    return SizedBox(
-      height: 44.h,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: countryList.length,
-        separatorBuilder: (_, __) => SizedBox(width: 10.w),
-        itemBuilder: (context, index) {
-          final bool isSelected = _selectedCountryIndex == index;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedCountryIndex = index),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: theme.brightness == Brightness.light
-                    ? (isSelected ? Colors.black : Colors.white)
-                    : (isSelected
-                          ? null
-                          : const Color.fromARGB(255, 21, 21, 22)),
-                borderRadius: BorderRadius.circular(30.r),
-                border: theme.brightness == Brightness.dark
-                    ? Border.all(
-                        color: isSelected
-                            ? AppColors.orangeAccentColor
-                            : Colors.transparent,
-                        width: 1.5,
-                      )
-                    : null,
-
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.network(
-                    countryList[index]['flag']!,
-                    width: 20.w,
-                    height: 20.h,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(CupertinoIcons.flag, size: 16.sp),
-                  ),
-                  SizedBox(width: 6.w),
-                  Text(
-                    countryList[index]['name']!,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+        ],
       ),
     );
   }
+}
 
-  // ── Section Header ─────────────────────────────────────────────────────────
-  Widget buildSectionHeader(ThemeData theme) {
-    return Row(
-      children: [
-        Text(
-          "Popular Destinations",
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const Spacer(),
-        Text(
-          "View all",
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.orangeAccentColor,
-          ),
-        ),
-        SizedBox(width: 2.w),
-        Icon(
-          CupertinoIcons.chevron_right,
-          color: AppColors.orangeAccentColor,
-          size: 13.sp,
-        ),
-      ],
-    );
-  }
+Widget buildTimeLine(List<Map<String, String>> timeLine) {
+  return SizedBox(
+    width: 300.w,
+    height: 250.h,
+    child: ListView.builder(
+      itemCount: timeLine.length,
+      shrinkWrap: true,
 
-  // ── Destination Card ───────────────────────────────────────────────────────
-  Widget buildPopularDestinations(
-    ThemeData theme,
-    DestinationModel destination,
-  ) {
-    final double imageHeight = 180.h;
+      itemBuilder: (context, index) {
+        final item = timeLine[index];
+        final bool isFirst = index == 0;
+        final bool isLast = index == timeLine.length - 1;
 
-    final double overlap = imageHeight * 0.5; // قد ما الصورة هتطلع برا
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// Timeline
+              SizedBox(
+                width: 42.w,
+                child: Column(
+                  children: [
+                    if (!isFirst)
+                      Expanded(
+                        child: Container(width: 2, color: Colors.grey.shade300),
+                      ),
 
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.topCenter,
-      children: [
-        // ── Card (يبدأ من نص الصورة) ──────────────────────────────────────
-        Container(
-          margin: EdgeInsets.only(top: overlap), // ← ينزل تحت الصورة
-          width: 290.w,
-          decoration: BoxDecoration(
-            color: theme.brightness == Brightness.light
-                ? AppColors.cardColor
-                : theme.cardColor,
-            borderRadius: BorderRadius.circular(28.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 30.r,
-                offset: const Offset(20, 26),
+                    Container(
+                      width: 18.w,
+                      height: 18.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 4, 25, 22),
+                          width: 3,
+                        ),
+                      ),
+                    ),
+
+                    if (!isLast)
+                      Expanded(
+                        child: Container(width: 2, color: Colors.grey.shade300),
+                      ),
+                  ],
+                ),
+              ),
+
+              SizedBox(width: 16.w),
+
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 22.h),
+                  child: TimelineCard(
+                    time: item["time"]!,
+                    title: item["title"]!,
+                    subtitle: item["description"]!,
+                    image: item["image"]!,
+                  ),
+                ),
               ),
             ],
           ),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20.w, overlap + 12.h, 20.w, 20.h),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('🌾', style: TextStyle(fontSize: 18.sp)),
-                    SizedBox(width: 6.w),
-                    Text(
-                      destination.name,
-                      style: GoogleFonts.poppins(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                        color: theme.textTheme.titleMedium?.color,
-                      ),
-                    ),
-                  ],
+        );
+      },
+    ),
+  );
+}
+
+// ── Top Bar ────────────────────────────────────────────────────────────────
+Widget buildTopBar(ThemeData theme, String currentCity) {
+  return Row(
+    children: [
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Location", style: theme.textTheme.bodyMedium),
+          Row(
+            children: [
+              Text(
+                currentCity,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: theme.textTheme.titleMedium?.color,
                 ),
-                SizedBox(height: 4.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('🇩🇪', style: TextStyle(fontSize: 14.sp)),
-                    SizedBox(width: 4.w),
-                    Text(
-                      destination.location,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13.sp,
-                        color: theme.textTheme.titleMedium?.color,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10.h),
-                Text(
-                  destination.description,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 12.sp, height: 1.6),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  destination.duration,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50.h,
-                  child: PrimaryButton(
-                    onPressed: () async {
-                      await HapticFeedback.lightImpact();
-                      if (!mounted) return;
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => DestinationDetailsScreen(
-                            destination: destination,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      'Show details',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              Icon(CupertinoIcons.chevron_down, size: 20.sp),
+            ],
+          ),
+        ],
+      ),
+      const Spacer(),
+      CircleContainer(
+        color: Color(0xffF5F5F5),
+        child: Icon(CupertinoIcons.bell, size: 20.sp),
+      ),
+      SizedBox(width: 10.w),
+      CircleAvatar(
+        radius: 22.r,
+        backgroundImage: const NetworkImage(
+          'https://i.pinimg.com/736x/6f/f0/f8/6ff0f878005d7059b0d85283438059f3.jpg',
+        ),
+      ),
+    ],
+  );
+}
+
+// ── Search Bar ─────────────────────────────────────────────────────────────
+Widget buildSearchBar(
+  ThemeData theme,
+  TextEditingController searchController,
+  FocusNode focusNode,
+) {
+  return Row(
+    children: [
+      Expanded(
+        child: SizedBox(
+          height: 52.h,
+          child: CustomeTextField(
+            title: 'Where do you want to go?',
+            controller: searchController,
+            focusNode: focusNode,
           ),
         ),
+      ),
+      SizedBox(width: 12.w),
+      CircleContainer(
+        color: Color(0xffF5F5F5),
+        child: Icon(FluentIcons.filter_32_filled, size: 20.sp),
+      ),
+    ],
+  );
+}
 
-        // ── Image floating above card ──────────────────────────────────────
-        Positioned(
-          top: 10.h,
-          child:
-              // الصورة
-              Hero(
-                tag: 'destination_${destination.id}',
-                child: CircleAvatar(
-                  radius: 90.r,
-                  backgroundImage: NetworkImage(destination.imageUrl),
-                ),
-              ),
-
-          // ⭐ Rating badge
-        ),
-        // ❤️ Favorite badge
-        Positioned(
-          top: 100.h,
-          right: 10.w,
-          child: GestureDetector(
-            onTap: () => setState(
-              () => destination.isFavorite = !destination.isFavorite,
-            ),
-            child: Container(
-              padding: EdgeInsets.all(8.r),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.01),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: Icon(
-                destination.isFavorite
-                    ? CupertinoIcons.heart_fill
-                    : Icons.favorite_border_rounded,
-                color: Colors.redAccent,
-                size: 25.sp,
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 100.h,
-          left: 10.w,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+// ── Country Filter Chips ───────────────────────────────────────────────────
+Widget buildCountryListView(
+  ThemeData theme,
+  List<String> feelingList,
+  int selectedCountryIndex,
+  Function(int) onSelect,
+) {
+  return SizedBox(
+    height: 44.h,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: feelingList.length,
+      separatorBuilder: (context, index) => SizedBox(width: 10.w),
+      itemBuilder: (context, index) {
+        final bool isSelected = selectedCountryIndex == index;
+        return GestureDetector(
+          onTap: () => onSelect(index),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: theme.cardColor,
+              color: theme.brightness == Brightness.light
+                  ? (isSelected ? Colors.black : Colors.white)
+                  : (isSelected ? null : const Color.fromARGB(255, 21, 21, 22)),
+              borderRadius: BorderRadius.circular(30.r),
+              border: theme.brightness == Brightness.dark
+                  ? Border.all(
+                      color: isSelected
+                          ? AppColors.orangeAccentColor
+                          : Colors.transparent,
+                      width: context.w(1.5),
+                    )
+                  : null,
 
-              borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 6),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.star_rounded, color: Colors.deepOrange, size: 20.sp),
-                SizedBox(width: 3.w),
                 Text(
-                  destination.rating.toString(),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 16.sp,
+                  feelingList[index],
+                  style: GoogleFonts.poppins(
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.bold,
-                    color: theme.textTheme.titleMedium?.color,
                   ),
                 ),
               ],
             ),
           ),
+        );
+      },
+    ),
+  );
+}
+
+// ── Section Header ─────────────────────────────────────────────────────────
+Widget buildSectionHeader(ThemeData theme) {
+  return Row(
+    children: [
+      Text(
+        "Rahal Choices",
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
         ),
-      ],
-    );
-  }
+      ),
+      const Spacer(),
+      Text(
+        "View all",
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: AppColors.orangeAccentColor,
+        ),
+      ),
+      SizedBox(width: 2.w),
+      Icon(
+        CupertinoIcons.chevron_right,
+        color: AppColors.orangeAccentColor,
+        size: 13.sp,
+      ),
+    ],
+  );
 }

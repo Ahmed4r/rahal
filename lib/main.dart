@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:liquid_glass_widgets/liquid_glass_setup.dart';
 import 'package:provider/provider.dart';
 import 'package:rahal/core/app_theme.dart';
 import 'package:rahal/screens/navigation_bar.dart';
 import 'package:rahal/screens/settings/provider/setting_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize liquid glass widgets to prevent white flash
+  await LiquidGlassWidgets.initialize();
+
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => SettingsProvider())],
-      child: const Rahal(),
+      child: LiquidGlassWidgets.wrap(child: Rahal()),
     ),
   );
 }

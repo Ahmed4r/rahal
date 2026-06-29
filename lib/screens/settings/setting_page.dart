@@ -20,7 +20,21 @@ class _SettingPageState extends State<SettingPage> {
   bool _locationAccess = true;
   String _selectedLanguage = 'English';
   String _selectedCurrency = 'USD – US Dollar';
-  String _selectedTheme = 'Light';
+  late String _selectedTheme;
+
+  @override
+  void initState() {
+    super.initState();
+    final settingsProvider = Provider.of<SettingsProvider>(
+      context,
+      listen: false,
+    );
+    _selectedTheme = settingsProvider.currentThemeMode == ThemeMode.light
+        ? 'Light'
+        : settingsProvider.currentThemeMode == ThemeMode.dark
+        ? 'Dark'
+        : 'System Default';
+  }
 
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
