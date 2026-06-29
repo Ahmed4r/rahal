@@ -47,6 +47,9 @@ dependencies:
   geolocator: ^14.0.3
   geocoding: ^4.0.0
   shared_preferences: ^2.5.5
+  # glass
+  liquid_glass_widgets: ^0.18.4
+
   
 
 
